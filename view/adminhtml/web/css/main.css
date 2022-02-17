@@ -9,3 +9,14 @@
     margin-right: 12px;
     vertical-align: bottom;
 }
+
+ul[role="menu"] [data-ui-id^="menu-weprovide"] strong:before {
+    background: url(../images/logo-brown.png) no-repeat;
+    background-size: 30px;
+    background-position: 0 -3px;
+    width: 30px;
+    height: 16px;
+    content: '';
+    display: inline-block;
+    margin-right: 6px;
+}
