@@ -25,18 +25,6 @@ abstract class AbstractStoreLinkedResource extends AbstractDb
      */
     protected $metadataPool;
 
-    /** @var string */
-    protected $storeLinkMainTable = null;
-
-    /** @var string */
-    protected $storeLinkLinkTable = null;
-
-    /** @var string */
-    protected $metadataClassName = null;
-
-    /** @var string */
-    protected $storeLinkIdFieldName = 'store_id';
-
     /**
      * @param Context $context
      * @param EntityManager $entityManager
@@ -58,7 +46,7 @@ abstract class AbstractStoreLinkedResource extends AbstractDb
      */
     protected function _construct()
     {
-        $this->_init($this->storeLinkMainTable, $this->_idFieldName);
+        $this->_init($this->getStoreLinkMainTable(), $this->_idFieldName);
     }
 
     /**
@@ -70,18 +58,14 @@ abstract class AbstractStoreLinkedResource extends AbstractDb
     public function lookupStoreIds($id)
     {
         $connection = $this->getConnection();
-
-        $entityMetadata = $this->metadataPool->getMetadata($this->metadataClassName);
-        $linkField = $entityMetadata->getLinkField();
-
-        $select = $connection->select()
-            ->from(['store_link' => $this->getTable($this->storeLinkLinkTable)], $this->storeLinkIdFieldName)
+        $select     = $connection->select()
+            ->from(['store_link' => $this->getTable($this->getStoreLinkLinkTable())], $this->getStoreLinkLinkTableStoreIdField())
             ->join(
                 ['main_table' => $this->getMainTable()],
-                'store_link.' . $linkField . ' = main_table.' . $linkField,
+                'store_link.' . $this->getStoreLinkLinkTableEntityIdField() . ' = main_table.' . $this->getIdFieldName(),
                 []
             )
-            ->where('main_table.' . $entityMetadata->getIdentifierField() . ' = :entity_id');
+            ->where('main_table.' . $this->getIdFieldName() . ' = :entity_id');
 
         return $connection->fetchCol($select, ['entity_id' => (int)$id]);
     }
@@ -93,6 +77,34 @@ abstract class AbstractStoreLinkedResource extends AbstractDb
     public function save(AbstractModel $object)
     {
         $this->entityManager->save($object);
+
         return $this;
+    }
+
+    /**
+     * The name of the main table for the entity which is connected to stores
+     * @return string
+     */
+    abstract public function getStoreLinkMainTable(): string;
+
+    /**
+     * The name of the table used to link the entity and stores together
+     * @return string
+     */
+    abstract public function getStoreLinkLinkTable(): string;
+
+    /**
+     * The name of the field, in the store link table, referencing the main table id
+     * @return string
+     */
+    abstract public function getStoreLinkLinkTableEntityIdField(): string;
+
+    /**
+     * The name of the field, in the store link table, referencing the store
+     * @return string
+     */
+    public function getStoreLinkLinkTableStoreIdField(): string
+    {
+        return 'store_id';
     }
 }

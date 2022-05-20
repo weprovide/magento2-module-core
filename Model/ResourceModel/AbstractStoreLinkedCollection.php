@@ -23,6 +23,9 @@ abstract class AbstractStoreLinkedCollection extends AbstractCollection
     /** @var string */
     protected const STORE_LINK_TABLE_ALIAS = 'store_link_table';
 
+    /** @var string */
+    protected const STORE_LINK_TABLE_STORE_ID_ALIAS = 'store_id';
+
     /**
      * @var StoreManagerInterface
      */
@@ -66,20 +69,22 @@ abstract class AbstractStoreLinkedCollection extends AbstractCollection
      */
     protected function performAfterLoad($tableName, $linkField)
     {
-        $linkedIds = $this->getColumnValues($linkField);
+        $linkedIds = $this->getColumnValues($this->getIdFieldName());
         if (count($linkedIds)) {
             $connection = $this->getConnection();
-            $select     = $connection->select()->from([static::STORE_LINK_TABLE_ALIAS => $this->getTable($tableName)])
+            $select     = $connection->select()
+                ->from([static::STORE_LINK_TABLE_ALIAS => $this->getTable($tableName)])
                 ->where(static::STORE_LINK_TABLE_ALIAS . '.' . $linkField . ' IN (?)', $linkedIds);
+
             $result     = $connection->fetchAll($select);
 
             $storesData = [];
             foreach ($result as $storeData) {
-                $storesData[$storeData[$linkField]][] = $storeData['store_id'];
+                $storesData[$storeData[$linkField]][] = $storeData[static::STORE_LINK_TABLE_STORE_ID_ALIAS];
             }
 
             foreach ($this as $item) {
-                $linkedId = $item->getData($linkField);
+                $linkedId = $item->getData($this->getIdFieldName());
                 $storeIds = $storesData[$linkedId] ?? [Store::DEFAULT_STORE_ID];
 
                 $storeIdKey = array_search(Store::DEFAULT_STORE_ID, $storeIds, true);
@@ -174,10 +179,10 @@ abstract class AbstractStoreLinkedCollection extends AbstractCollection
         if ($this->getFilter('store')) {
             $this->getSelect()->joinLeft(
                 ['store_table' => $this->getTable($tableName)],
-                'main_table.' . $linkField . ' = store_table.' . $linkField,
+                'main_table.' . $this->getIdFieldName() . ' = store_table.' . $linkField,
                 []
             )->group(
-                'main_table.' . $linkField
+                'main_table.' . $this->getIdFieldName()
             );
         }
     }
