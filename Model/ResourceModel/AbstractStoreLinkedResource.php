@@ -71,12 +71,34 @@ abstract class AbstractStoreLinkedResource extends AbstractDb
     }
 
     /**
+     * Saving through entityManager to trigger saveHandlers
+     *
      * @param AbstractModel $object
      * @return $this|AbstractStoreLinkedResource
      */
     public function save(AbstractModel $object)
     {
         $this->entityManager->save($object);
+
+        return $this;
+    }
+
+    /**
+     * Loading with entityManager to trigger readHandlers
+     *
+     * @param AbstractModel $object
+     * @param mixed $value
+     * @param string|null $field
+     * @return AbstractStoreLinkedResource
+     */
+    public function load(AbstractModel $object, $value, $field = null)
+    {
+        if ($field !== null && $field !== $this->getIdFieldName()) {
+            parent::load($object, $value, $field);
+            $value = $object->getId() ?? $value;
+        }
+
+        $object = $this->entityManager->load($object, $value);
 
         return $this;
     }
