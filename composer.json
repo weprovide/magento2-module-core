@@ -2,7 +2,7 @@
     "name": "weprovide/magento2-core",
     "description": "",
     "type": "magento2-module",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "license": "MIT",
     "authors": [
         {
@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "php": ">=7.1 <8.1",
+        "php": ">=7.1 <8.2",
         "magento/framework": ">=102.0"
     },
     "autoload": {
