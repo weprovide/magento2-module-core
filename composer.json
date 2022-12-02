@@ -2,7 +2,7 @@
     "name": "weprovide/magento2-core",
     "description": "",
     "type": "magento2-module",
-    "version": "1.2.3",
+    "version": "1.3.0",
     "license": "MIT",
     "authors": [
         {
